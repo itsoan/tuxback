@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# Local runtime files
+tuxback.log
+schedules.json
+
+# Backup and restore directories
+backups/
+restored_data/
+restored_from_cli/
+
+# Test directories
+test_data/
+
+# macOS files
+.DS_Store
+
+# IDE settings
+.idea/
+.vscode/

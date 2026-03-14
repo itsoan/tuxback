@@ -30,6 +30,9 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
+      - name: Make launcher executable
+        run: chmod +x tuxback
+
       - name: Create test data
         run: |
           mkdir -p test_data
@@ -43,21 +46,24 @@ jobs:
           python -c "from app.restore import restore_backup; print('restore ok')"
           python -c "from app.scheduler import add_schedule, list_schedules, run_due_schedules; print('scheduler ok')"
 
-      - name: Run CLI backup command
-        run: python cli.py backup test_data
+      - name: Run launcher help
+        run: ./tuxback --help
 
-      - name: Run CLI list command
-        run: python cli.py list
+      - name: Run launcher backup command
+        run: ./tuxback backup test_data
 
-      - name: Run CLI schedule commands
+      - name: Run launcher list command
+        run: ./tuxback list
+
+      - name: Run launcher schedule commands
         run: |
-          python cli.py schedule-add test_data 1
-          python cli.py schedule-list
-          python cli.py run-scheduler
+          ./tuxback schedule-add test_data 1
+          ./tuxback schedule-list
+          ./tuxback run-scheduler
 
       - name: Check log file creation
         run: test -f tuxback.log
-        
+
       - name: Build Docker image
         run: docker build -t tuxback .
 

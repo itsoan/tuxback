@@ -1,5 +1,8 @@
 FROM python:3.12-slim
 
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
 COPY requirements.txt .
@@ -8,6 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /app/backups
+RUN mkdir -p /app/backups && chmod +x /app/tuxback
 
-CMD ["python3", "cli.py", "--help"]
+CMD ["./tuxback", "--help"]
