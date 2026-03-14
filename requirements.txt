@@ -1,0 +1,2 @@
+# The project currently uses only Python standard library modules.
+# External dependencies can be added here in the future.

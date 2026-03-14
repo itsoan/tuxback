@@ -1,0 +1,9 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+backups
+restored_data
+restored_from_cli
+test_data
+schedules.json
