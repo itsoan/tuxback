@@ -1,7 +1,8 @@
 import argparse
 import logging
+
 from app.backup import create_backup
-from app.config import setup_logging
+from app.config import APP_NAME, APP_VERSION, setup_logging
 from app.restore import restore_backup
 from app.scheduler import (
     add_schedule,
@@ -11,22 +12,24 @@ from app.scheduler import (
 )
 from app.storage import delete_backup, list_backups
 
-
 logger = logging.getLogger(__name__)
+
+
 # Main entry point of the CLI application.
-# This function defines all supported commands and routes them
-# to the corresponding functions from the application modules.
 def main() -> None:
     setup_logging()
-    # Create the root CLI parser.
+
     parser = argparse.ArgumentParser(
         description="CLI service for backup and restore operations"
     )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {APP_VERSION}",
+    )
 
-    # Register subcommands.
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # -------------------- Backup command --------------------
     backup_parser = subparsers.add_parser(
         "backup",
         help="Create a backup of a directory"
@@ -36,7 +39,6 @@ def main() -> None:
         help="Path to the source directory"
     )
 
-    # -------------------- Restore command --------------------
     restore_parser = subparsers.add_parser(
         "restore",
         help="Restore a backup archive"
@@ -50,13 +52,16 @@ def main() -> None:
         help="Path to the restore directory"
     )
 
-    # -------------------- List backups command --------------------
     subparsers.add_parser(
         "list",
         help="List all available backups"
     )
 
-    # -------------------- Delete backup command --------------------
+    subparsers.add_parser(
+        "status",
+        help="Show project status summary"
+    )
+
     delete_parser = subparsers.add_parser(
         "delete",
         help="Delete a backup archive"
@@ -66,7 +71,6 @@ def main() -> None:
         help="Backup filename to delete"
     )
 
-    # -------------------- Add scheduled task command --------------------
     schedule_add_parser = subparsers.add_parser(
         "schedule-add",
         help="Add a scheduled backup task"
@@ -81,13 +85,11 @@ def main() -> None:
         help="Backup interval in minutes"
     )
 
-    # -------------------- List scheduled tasks command --------------------
     subparsers.add_parser(
         "schedule-list",
         help="List all scheduled backup tasks"
     )
 
-    # -------------------- Delete scheduled task command --------------------
     schedule_delete_parser = subparsers.add_parser(
         "schedule-delete",
         help="Delete a scheduled backup task"
@@ -98,13 +100,11 @@ def main() -> None:
         help="Scheduled task ID"
     )
 
-    # -------------------- Run scheduler command --------------------
     subparsers.add_parser(
         "run-scheduler",
         help="Run all due scheduled backup tasks"
     )
 
-    # Parse user input.
     args = parser.parse_args()
     logger.info("CLI command started: %s", args.command)
 
@@ -126,6 +126,19 @@ def main() -> None:
                 print("Available backups:")
                 for backup in backups:
                     print(f"- {backup}")
+
+        elif args.command == "status":
+            backups = list_backups()
+            schedules = list_schedules()
+            enabled_schedules = [
+                schedule for schedule in schedules if schedule.get("enabled", True)
+            ]
+
+            print(f"{APP_NAME} status:")
+            print(f"- Version: {APP_VERSION}")
+            print(f"- Total backups: {len(backups)}")
+            print(f"- Total schedules: {len(schedules)}")
+            print(f"- Enabled schedules: {len(enabled_schedules)}")
 
         elif args.command == "delete":
             deleted = delete_backup(args.filename)
@@ -179,6 +192,7 @@ def main() -> None:
                     )
 
     except Exception as error:
+        logger.exception("CLI command failed")
         print(f"Error: {error}")
 
 
