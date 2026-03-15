@@ -3,14 +3,13 @@ import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
-
 from app.backup import create_backup
 from app.config import SCHEDULE_FILE
 
 logger = logging.getLogger(__name__)
 
 
-# Loads all scheduled backup tasks from the JSON file.
+# Загружает все запланированные задачи резервного копирования из JSON-файла.
 def load_schedules() -> List[Dict[str, Any]]:
     if not SCHEDULE_FILE.exists():
         logger.info("Schedule file does not exist yet: %s", SCHEDULE_FILE)
@@ -23,7 +22,7 @@ def load_schedules() -> List[Dict[str, Any]]:
     return schedules
 
 
-# Saves the current list of scheduled tasks to the JSON file.
+# Сохраняет текущий список запланированных задач в JSON-файл.
 def save_schedules(schedules: List[Dict[str, Any]]) -> None:
     with open(SCHEDULE_FILE, "w", encoding="utf-8") as file:
         json.dump(schedules, file, indent=4, ensure_ascii=False)
@@ -31,8 +30,8 @@ def save_schedules(schedules: List[Dict[str, Any]]) -> None:
     logger.info("Saved %d scheduled task(s)", len(schedules))
 
 
-# Adds a new scheduled backup task.
-# The function validates both the source directory and the interval.
+# Добавляет новую запланированную задачу резервного копирования.
+# Функция проверяет как исходный каталог, так и интервал.
 def add_schedule(source: str, interval_minutes: int) -> Dict[str, Any]:
     source_path = Path(source)
 
@@ -81,12 +80,12 @@ def add_schedule(source: str, interval_minutes: int) -> Dict[str, Any]:
     return new_schedule
 
 
-# Returns the full list of configured scheduled tasks.
+# Возвращает полный список настроенных запланированных задач.
 def list_schedules() -> List[Dict[str, Any]]:
     return load_schedules()
 
 
-# Deletes a scheduled task by its numeric identifier.
+# Запланированная задача удалена по её числовому идентификатору.
 def delete_schedule(schedule_id: int) -> bool:
     schedules = load_schedules()
     updated_schedules = [
@@ -103,7 +102,7 @@ def delete_schedule(schedule_id: int) -> bool:
     return True
 
 
-# Runs all enabled scheduled tasks that are due.
+# Выполняет все включенные запланированные задачи, срок выполнения которых истекает.
 def run_due_schedules() -> List[Dict[str, Any]]:
     schedules = load_schedules()
     results: List[Dict[str, Any]] = []

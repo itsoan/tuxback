@@ -7,7 +7,7 @@ from app.storage import backup_exists, get_backup_path
 logger = logging.getLogger(__name__)
 
 
-# Verifies that every extracted file will stay inside the target directory.
+# Функция, что все извлеченные файлы останутся в целевом каталоге.
 def _is_within_directory(base: Path, target: Path) -> bool:
     try:
         target.resolve().relative_to(base.resolve())
@@ -16,9 +16,9 @@ def _is_within_directory(base: Path, target: Path) -> bool:
         return False
 
 
-# Restores a backup archive into the specified target directory.
-# Before extraction, all archive members are validated to prevent
-# path traversal outside the destination directory.
+# Восстанавливает резервную копию архива в указанный целевой каталог.
+# Перед извлечением все элементы архива проверяются, чтобы предотвратить
+# обход пути за пределы целевого каталога.
 def restore_backup(filename: str, target_path: str) -> Path:
     logger.info("Starting restore for archive: %s", filename)
 
