@@ -1,238 +1,330 @@
 # TuxBack
 
-TuxBack is a CLI-based backup and restore service for Linux, developed in Python. The project was created as a diploma project focused on backup automation, recovery operations, Docker containerization, and CI/CD integration.
+TuxBack — это CLI‑утилита для резервного копирования и восстановления данных в Linux, разработанная на Python. Проект был создан как дипломная работа и демонстрирует разработку сервиса резервного копирования с использованием контейнеризации Docker и практик CI/CD.
 
-## Project Goals
+Основная идея проекта — предоставить простую, расширяемую и удобную утилиту командной строки для автоматизации резервного копирования файловых директорий.
 
-The main goal of the project is to provide a simple and extensible command-line service that can:
+---
 
-- create compressed backups of directories;
-- restore files from backup archives;
-- manage backup storage;
-- configure scheduled backup tasks;
-- run both locally and inside Docker;
-- be automatically checked through CI/CD.
+# Основные возможности
 
-## Implemented Features
+TuxBack поддерживает следующие функции:
 
-- Creation of backup archives in `.tar.gz` format
-- Restore of backup archives into a target directory
-- Listing available backups
-- Deletion of backup archives
-- Adding scheduled backup tasks
-- Listing scheduled backup tasks
-- Deleting scheduled backup tasks
-- Manual execution of due scheduled tasks
-- Logging to console and file (`tuxback.log`)
-- Docker image build and container launch support
-- GitHub Actions CI workflow
-- Safe restore validation against archive path traversal
-- Executable launcher script `tuxback`
-- `status` command for project summary
-- `--version` flag for utility version output
-- Duplicate scheduled task protection
+- создание архивов резервных копий директорий
+- восстановление файлов из архивов
+- управление хранилищем резервных копий
+- удаление архивов
+- планирование автоматических резервных копий
+- выполнение задач планировщика вручную
+- вывод состояния сервиса
+- логирование операций
+- установка как системной утилиты Linux
+- автоматический запуск планировщика через systemd
 
-## Project Structure
+Архивы создаются в формате:
 
-```text
-tuxback/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── app/
-│   ├── __init__.py
-│   ├── backup.py
-│   ├── config.py
-│   ├── restore.py
-│   ├── scheduler.py
-│   └── storage.py
-├── backups/
-├── test_data/
-├── cli.py
-├── Dockerfile
-├── requirements.txt
-├── README.md
-├── schedules.json
-├── tuxback
-└── tuxback.log
 ```
-## Technologies Used
+.tar.gz
+```
 
-- Python 3.12
-- Standard Library (`argparse`, `tarfile`, `pathlib`, `json`, `logging`, `datetime`)
-- Docker
-- GitHub Actions
+---
 
-## Local Run
+# Реализованные команды
 
-Move to the project directory:
+После установки утилита доступна как глобальная команда:
 
 ```bash
-cd tuxback
+tuxback
 ```
 
-Make the launcher executable:
-
-```bash
-chmod +x tuxback
-```
-
-Show all available commands:
-
-```bash
-./tuxback --help
-```
-
-Show utility version:
-
-```bash
-./tuxback --version
-```
-
-Create a test directory:
-```bash
-mkdir -p test_data
-echo "hello backup" > test_data/file.txt
-```
-
-Create a backup:
-
-```bash
-./tuxback backup test_data
-```
-
-List backups:
-
-```bash
-./tuxback list
-```
-
-Show project status summary:
-
-```bash
-./tuxback status
-```
-
-Restore a backup:
-```bash
-./tuxback restore test_data_YYYYMMDD_HHMMSS.tar.gz restored_data
-```
-
-Delete a backup:
-
-```bash
-./tuxback delete test_data_YYYYMMDD_HHMMSS.tar.gz
-```
-
-## Optional Global Command Installation
-
-To run the utility as a regular command from anywhere in the system, create a symbolic link:
-
-```bash
-sudo ln -sf "$(pwd)/tuxback" /usr/local/bin/tuxback
-```
-
-After that, the utility can be started like this:
+Список доступных команд:
 
 ```bash
 tuxback --help
+```
+
+Основные команды:
+
+Создание резервной копии:
+
+```bash
+tuxback backup <directory>
+```
+
+Просмотр всех архивов:
+
+```bash
 tuxback list
-tuxback backup test_data
 ```
+
+Восстановление архива:
+
+```bash
+tuxback restore <archive> <target_directory>
+```
+
+Удаление архива:
+
+```bash
+tuxback delete <archive>
+```
+
+Просмотр состояния сервиса:
+
+```bash
 tuxback status
+```
+
+Вывод версии программы:
+
+```bash
 tuxback --version
-
-## Scheduled Tasks
-
-Add a scheduled backup task:
-
-```bash
-./tuxback schedule-add test_data 1
 ```
 
-List scheduled tasks:
+---
+
+# Планировщик резервного копирования
+
+Добавление задачи резервного копирования:
+
 ```bash
-./tuxback schedule-list
+tuxback schedule-add <directory> <interval_minutes>
 ```
 
-Run all due scheduled tasks:
+Пример:
 
 ```bash
-./tuxback run-scheduler
+tuxback schedule-add /home/user/data 10
 ```
-If you try to add the same active schedule with the same source and interval twice, TuxBack will reject it to prevent duplicates.
 
+Это означает, что резервная копия будет выполняться каждые 10 минут.
 
-Delete a scheduled task:
-
-```bash
-./tuxback schedule-delete 1
-
-## Logging
-
-All main operations are logged to both the terminal and the file `tuxback.log`.
-
-Examples:
+Просмотр всех задач:
 
 ```bash
-./tuxback list
+tuxback schedule-list
+```
+
+Удаление задачи:
+
+```bash
+tuxback schedule-delete <id>
+```
+
+Ручной запуск планировщика:
+
+```bash
+tuxback run-scheduler
+```
+
+Если пользователь попытается добавить одинаковую задачу (одинаковая директория и интервал), утилита предотвратит дублирование.
+
+---
+
+# Установка
+
+Сначала необходимо скачать репозиторий:
+
+```bash
+git clone https://github.com/de-frogg/tuxback
+cd tuxback
+```
+
+Сделать установочные скрипты исполняемыми:
+
+```bash
+chmod +x tuxback install.sh uninstall.sh
+```
+
+Запустить установку:
+
+```bash
+./install.sh
+```
+
+Во время установки происходит:
+
+1. копирование проекта в директорию
+
+```
+/opt/tuxback
+```
+
+2. создание симлинка
+
+```
+/usr/local/bin/tuxback
+```
+
+3. установка systemd‑сервиса и таймера
+
+```
+tuxback-scheduler.service
+
+tuxback-scheduler.timer
+```
+
+После установки команда `tuxback` становится доступной из любой директории.
+
+Проверка:
+
+```bash
+which tuxback
+```
+
+---
+
+# Автоматический запуск через systemd
+
+Во время установки автоматически создаётся systemd‑таймер.
+
+Таймер запускает:
+
+```bash
+tuxback run-scheduler
+```
+
+по умолчанию **каждую минуту**.
+
+Проверить состояние таймера:
+
+```bash
+systemctl status tuxback-scheduler.timer
+```
+
+Просмотреть активные таймеры:
+
+```bash
+systemctl list-timers --all | grep tuxback
+```
+
+Просмотреть логи выполнения задач:
+
+```bash
+journalctl -u tuxback-scheduler.service
+```
+
+---
+
+# Удаление программы
+
+Удаление выполняется командой:
+
+```bash
+/opt/tuxback/uninstall.sh
+```
+
+Скрипт удаляет:
+
+- systemd таймер
+- systemd сервис
+- симлинк `/usr/local/bin/tuxback`
+- директорию `/opt/tuxback`
+
+После удаления необходимо очистить кеш bash:
+
+```bash
+hash -r
+```
+
+---
+
+# Логирование
+
+Все операции записываются:
+
+- в консоль
+- в файл журнала
+
+```
+tuxback.log
+```
+
+Пример просмотра последних записей:
+
+```bash
 tail -n 20 tuxback.log
 ```
 
-## Docker Usage
+---
 
-Build the image:
+# Docker
+
+Проект содержит Dockerfile, позволяющий собрать контейнер с утилитой.
+
+Сборка образа:
 
 ```bash
 docker build -t tuxback .
 ```
 
-Run container help:
+Запуск контейнера:
 
 ```bash
 docker run --rm tuxback
 ```
 
-Run commands using the current project directory as a mounted volume:
+Также можно использовать текущую директорию как volume:
 
 ```bash
 docker run --rm -v "$(pwd):/app" tuxback ./tuxback list
-docker run --rm -v "$(pwd):/app" tuxback ./tuxback backup test_data
 ```
 
-## CI/CD
+Docker в проекте используется для демонстрации контейнеризации и изоляции среды выполнения.
 
-The project includes a GitHub Actions workflow located at:
+---
 
-```text
+# CI/CD
+
+В проекте используется GitHub Actions.
+
+Файл конфигурации находится в:
+
+```
 .github/workflows/ci.yml
 ```
 
-The pipeline performs the following actions:
+CI pipeline выполняет:
 
-- checks out the repository;
-- sets up Python 3.12;
-- installs dependencies;
-- makes the launcher executable;
-- creates test data;
-- verifies module imports;
-- runs launcher-based smoke checks;
-- verifies log file creation;
-- builds the Docker image;
-- runs the Docker container.
+- установку Python
+- установку зависимостей
+- проверку импортов
+- запуск CLI smoke‑тестов
+- проверку создания логов
+- сборку Docker образа
 
+Это гарантирует, что проект корректно собирается и запускается после каждого коммита.
 
-## Example Workflow
+---
 
-## Future Improvements
+# Используемые технологии
 
-- remote storage support;
-- encryption of backup archives;
-- automatic cleanup of old backups;
-- unit and integration tests;
-- support for cron or systemd timer integration;
-- backup configuration via environment variables.
+- Python 3.12
+- argparse
+- tarfile
+- pathlib
+- json
+- logging
+- datetime
+- Docker
+- GitHub Actions
+- systemd
 
-## License
+---
 
-This project is distributed under the terms of the LICENSE file.
+# Возможные улучшения
+
+В дальнейшем проект может быть расширен следующими функциями:
+
+- шифрование архивов
+- удалённое хранилище резервных копий
+- автоматическая очистка старых архивов
+- полноценные unit и integration тесты
+- web‑интерфейс управления
+- конфигурация через файл
+
+---
+
+# Лицензия
+
+Проект распространяется на условиях лицензии, указанной в файле LICENSE.
