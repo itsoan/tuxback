@@ -50,8 +50,25 @@ def add_schedule(source: str, interval_minutes: int) -> Dict[str, Any]:
 
     schedules = load_schedules()
 
+    for schedule in schedules:
+        if (
+            schedule["source"] == source
+            and schedule["interval_minutes"] == interval_minutes
+            and schedule.get("enabled", True)
+        ):
+            logger.warning(
+                "Duplicate schedule detected for source=%s interval=%s",
+                source,
+                interval_minutes,
+            )
+            raise ValueError(
+                "An active schedule with the same source and interval already exists"
+            )
+
+    next_id = max((schedule["id"] for schedule in schedules), default=0) + 1
+
     new_schedule = {
-        "id": len(schedules) + 1,
+        "id": next_id,
         "source": source,
         "interval_minutes": interval_minutes,
         "enabled": True,

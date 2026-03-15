@@ -6,12 +6,16 @@ BACKUP_DIR = BASE_DIR / "backups"
 SCHEDULE_FILE = BASE_DIR / "schedules.json"
 LOG_FILE = BASE_DIR / "tuxback.log"
 TIME_FORMAT = "%Y%m%d_%H%M%S"
+APP_NAME = "TuxBack"
+APP_VERSION = "1.0.0"
 
 
+# Creates required directories for the application.
 def ensure_directories() -> None:
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
 
+# Configures logging for console output and file output.
 def setup_logging() -> None:
     ensure_directories()
 

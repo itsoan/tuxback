@@ -222,7 +222,6 @@ The pipeline performs the following actions:
 - runs the Docker container.
 
 
-
 ## Example Workflow
 
 ## Future Improvements
